@@ -6,9 +6,10 @@ const boardWidth = 560
 const boardHeight = 300
 const ballDiameter = 20
 
-let xDirection = 2
+let xDirection = -2
 let yDirection = 2
-let timerId 
+let timerId
+let score = 0
 
 const userStart = [230, 10]
 let currentPosition = userStart
@@ -121,26 +122,42 @@ function collisionCheck() {
     //CHECK FOR BLOCK COLLISIONS
     for (let i = 0; i < blocks.length; i++) {
         if (
-            (ballCurrentPosition[0] > blocks[i].bottomLeft[0] && ballCurrentPosition < blocks[i].bottomRight[0]) &&
-            ((ballCurrentPosition[1] + ballDiameter) > blocks[i].bottomLeft[1] && ballCurrentPosition[1] < blocks[i].topLeft[1])  
+            (ballCurrentPosition[0] > blocks[i].bottomLeft[0] && ballCurrentPosition[0] < blocks[i].bottomRight[0]) &&
+            ((ballCurrentPosition[1] + ballDiameter) > blocks[i].bottomLeft[1] && ballCurrentPosition[1] < blocks[i].topLeft[1])
         ) {
             const allBlocks = Array.from(document.querySelectorAll('.block'))
-            console.log(allBlocks)
             allBlocks[i].classList.remove('block')
             blocks.splice(i, 1)
             changeDirection()
+            score++
+            scoreDisplay.innerHTML = score
+
+            //CHECK FOR WIN
+            if (blocks.length === 0) {
+                scoreDisplay.innerHTML = 'YOU WIN'
+                clearInterval(timerId)
+                document.removeEventListener('keydown', moveUser)
+            }
         }
     }
 
 
-
     // CHECK FOR WALL COLLISION
-    if (ballCurrentPosition[0] >= (boardWidth - ballDiameter) || 
+    if (ballCurrentPosition[0] >= (boardWidth - ballDiameter) ||
         ballCurrentPosition[1] >= (boardHeight - ballDiameter) ||
-        ballCurrentPosition[0] <= 0)
-    {
+        ballCurrentPosition[0] <= 0
+    ) {
         changeDirection()
     }
+
+    //CHECK USER COLLISION
+    if (
+        (ballCurrentPosition[0] > currentPosition[0] && ballCurrentPosition[0] < currentPosition[0] + blockWidth) &&
+        (ballCurrentPosition[1] > currentPosition[1] && ballCurrentPosition[1] < currentPosition[1] + blockHeight)
+    ) {
+        changeDirection()
+    }
+
     //CHECK FOR GAME OVER
     if (ballCurrentPosition[1] <= 0) {
         clearInterval(timerId)
@@ -155,7 +172,7 @@ function changeDirection() {
         yDirection = -2
         return
     }
-    if (xDirection == 2 && yDirection === -2) {
+    if (xDirection === 2 && yDirection === -2) {
         xDirection = -2
         return
     }
